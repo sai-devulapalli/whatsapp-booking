@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum StaffRole {
+  ORG_ADMIN
+  STAFF
+}
+
+enum AppointmentStatus {
+  BOOKED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum TemplateCategory {
+  CONFIRMATION
+  REMINDER
+  CANCELLATION
+  CUSTOM
+}
+
+enum TemplateApprovalStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  category  String
+  timezone  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  staff             StaffUser[]
+  resources         Resource[]
+  services          Service[]
+  appointments      Appointment[]
+  messageTemplates  MessageTemplate[]
+}
+
+model StaffUser {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  email          String       @unique
+  passwordHash   String
+  role           StaffRole    @default(STAFF)
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+}
+
+model Service {
+  id              String   @id @default(uuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name            String
+  durationMinutes Int
+  bufferMinutes   Int      @default(0)
+  priceCents      Int?
+  createdAt       DateTime @default(now())
+
+  resources    ResourceService[]
+  appointments Appointment[]
+
+  @@index([organizationId])
+}
+
+model Resource {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  title          String?
+  createdAt      DateTime     @default(now())
+
+  services              ResourceService[]
+  weeklyAvailability    WeeklyAvailability[]
+  availabilityExceptions AvailabilityException[]
+  appointments          Appointment[]
+
+  @@index([organizationId])
+}
+
+model ResourceService {
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  serviceId  String
+  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([resourceId, serviceId])
+}
+
+model WeeklyAvailability {
+  id         String   @id @default(uuid())
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  weekday    Weekday
+  startTime  String
+  endTime    String
+
+  @@index([resourceId])
+}
+
+model AvailabilityException {
+  id         String   @id @default(uuid())
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  date       DateTime @db.Date
+  isClosed   Boolean  @default(true)
+  startTime  String?
+  endTime    String?
+  reason     String?
+
+  @@unique([resourceId, date])
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  phone     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id             String            @id @default(uuid())
+  organizationId String
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  resourceId     String
+  resource       Resource          @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  serviceId      String
+  service        Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  customerId     String
+  customer       Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  startsAt       DateTime
+  endsAt         DateTime
+  status         AppointmentStatus @default(BOOKED)
+  reminder24hSentAt DateTime?
+  reminder1hSentAt  DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([resourceId, startsAt])
+  @@index([organizationId, startsAt])
+}
+
+model MessageTemplate {
+  id               String                 @id @default(uuid())
+  organizationId   String
+  organization     Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name             String
+  category         TemplateCategory
+  language         String                 @default("en")
+  bodyText         String
+  variables        String[]               @default([])
+  approvalStatus   TemplateApprovalStatus @default(DRAFT)
+  metaTemplateId   String?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  @@unique([organizationId, name, language])
+}

@@ -1,0 +1,22 @@
+{
+  "name": "whatsapp-booking",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev -w apps/api",
+    "dev:admin": "npm run dev -w apps/admin-web",
+    "build": "npm run build -w packages/shared && npm run build -w apps/api && npm run build -w apps/admin-web",
+    "test": "npm run test -w apps/api",
+    "prisma:generate": "prisma generate --schema prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "prisma": "^5.20.0",
+    "typescript": "^5.6.3"
+  }
+}
