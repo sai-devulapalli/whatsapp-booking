@@ -48,12 +48,21 @@ export function SignupPage() {
         <h1>Create your organization</h1>
         <div className="field">
           <label htmlFor="orgName">Organization name</label>
-          <input id="orgName" value={form.name} onChange={(e) => update("name", e.target.value)} required />
+          <input
+            id="orgName"
+            name="organization"
+            autoComplete="organization"
+            value={form.name}
+            onChange={(e) => update("name", e.target.value)}
+            required
+          />
         </div>
         <div className="field">
           <label htmlFor="category">Category</label>
           <input
             id="category"
+            name="category"
+            autoComplete="off"
             placeholder="e.g. salon, clinic, gym, consulting"
             value={form.category}
             onChange={(e) => update("category", e.target.value)}
@@ -62,17 +71,33 @@ export function SignupPage() {
         </div>
         <div className="field">
           <label htmlFor="timezone">Timezone</label>
-          <input id="timezone" value={form.timezone} onChange={(e) => update("timezone", e.target.value)} required />
+          <input
+            id="timezone"
+            name="timezone"
+            autoComplete="off"
+            value={form.timezone}
+            onChange={(e) => update("timezone", e.target.value)}
+            required
+          />
         </div>
         <div className="field">
           <label htmlFor="adminName">Your name</label>
-          <input id="adminName" value={form.adminName} onChange={(e) => update("adminName", e.target.value)} required />
+          <input
+            id="adminName"
+            name="name"
+            autoComplete="name"
+            value={form.adminName}
+            onChange={(e) => update("adminName", e.target.value)}
+            required
+          />
         </div>
         <div className="field">
           <label htmlFor="adminEmail">Your email</label>
           <input
             id="adminEmail"
+            name="email"
             type="email"
+            autoComplete="email"
             value={form.adminEmail}
             onChange={(e) => update("adminEmail", e.target.value)}
             required
@@ -82,7 +107,9 @@ export function SignupPage() {
           <label htmlFor="adminPassword">Password</label>
           <input
             id="adminPassword"
+            name="new-password"
             type="password"
+            autoComplete="new-password"
             minLength={8}
             value={form.adminPassword}
             onChange={(e) => update("adminPassword", e.target.value)}
